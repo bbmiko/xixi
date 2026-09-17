@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FFB6A0">
+<title>陪你 · 给希希</title>
+<style>
+  /* ============= 基础重置 ============= */
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+                 "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #5C3B2E;
+    background: linear-gradient(160deg, #FFF5F0 0%, #FFE9DD 50%, #FFD8C2 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    position: relative;
+    overscroll-behavior-y: contain;
+  }
+  button { font-family: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+  textarea { font-family: inherit; }
+
+  /* ============= 背景飘动爱心 ============= */
+  .hearts-bg {
+    position: fixed; inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .float-heart {
+    position: absolute;
+    bottom: -30px;
+    opacity: 0;
+    color: #FF8FA3;
+    user-select: none;
+    animation: floatUp linear forwards;
+    filter: drop-shadow(0 2px 4px rgba(255,143,163,.3));
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+    10%  { opacity: .85; }
+    90%  { opacity: .55; }
+    100% { transform: translateY(-110vh) rotate(40deg); opacity: 0; }
+  }
+
+  /* ============= 容器 ============= */
+  .app {
+    position: relative; z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 28px 18px 80px;
+  }
+
+  /* ============= 顶部 Hero ============= */
+  .hero {
+    text-align: center;
+    padding: 12px 0 22px;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: rgba(255,255,255,.6);
+    backdrop-filter: blur(8px);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: #FF6B7A;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 14px rgba(255,143,163,.18);
+  }
+  .hero h1 {
+    font-size: 34px;
+    font-weight: 700;
+    margin-top: 14px;
+    color: #C25565;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 8px rgba(255,182,160,.25);
+  }
+  .hero-sub {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #B0735C;
+    opacity: .85;
+  }
+
+  /* ============= 卡片基础 ============= */
+  .card {
+    background: rgba(255,255,255,.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 22px;
+    padding: 20px 18px 22px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 28px rgba(192,90,90,.10),
+                inset 0 1px 0 rgba(255,255,255,.9);
+    border: 1px solid rgba(255,255,255,.55);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(255,182,160,.35) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .card-head { margin-bottom: 14px; }
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #C25565;
+    letter-spacing: 1px;
+  }
+
+  /* ============= 日记卡片 ============= */
+  .diary-date {
+    font-size: 22px;
+    font-weight: 600;
+    color: #C25565;
+    text-align: center;
+    margin: 4px 0 16px;
+    letter-spacing: 1px;
+  }
+  .weather-label {
+    font-size: 13px;
+    color: #B0735C;
+    margin-bottom: 10px;
+    text-align: center;
+    opacity: .85;
+  }
+  .weather-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .weather-item {
+    background: rgba(255,255,255,.7);
+    border: 2px solid transparent;
+    border-radius: 16px;
+    padding: 12px 6px 10px;
+    text-align: center;
+    transition: all .25s ease;
+    cursor: pointer;
+    user-select: none;
+  }
+  .weather-item:active { transform: scale(.95); }
+  .weather-item.selected {
+    border-color: #FF8FA3;
+    background: #FFF0F2;
+    box-shadow: 0 4px 12px rgba(255,143,163,.25);
+  }
+  .weather-icon { font-size: 28px; line-height: 1; }
+  .weather-name { font-size: 12px; margin-top: 4px; color: #C25565; }
+  .diary-line {
+    margin-top: 16px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #7A5544;
+    background: rgba(255,228,217,.55);
+    border-radius: 14px;
+    padding: 12px 14px;
+    min-height: 50px;
+    text-align: center;
+    font-style: italic;
+  }
+  .diary-line:empty::before {
+    content: "（选个天气，看看今天适合做什么～）";
+    color: #B0735C;
+    opacity: .55;
+    font-style: italic;
+  }
+
+  /* ============= 陪伴计数器 ============= */
+  .card-days { text-align: center; }
+  .days-count {
+    display: flex; align-items: baseline; justify-content: center;
+    margin: 6px 0 4px;
+  }
+  .days-num {
+    font-size: 56px;
+    font-weight: 700;
+    color: #FF6B7A;
+    line-height: 1;
+    text-shadow: 0 3px 10px rgba(255,107,122,.25);
+    font-variant-numeric: tabular-nums;
+  }
+  .days-unit {
+    font-size: 18px;
+    color: #C25565;
+    margin-left: 6px;
+  }
+  .days-detail {
+    font-size: 13px;
+    color: #B0735C;
+    margin-top: 8px;
+    letter-spacing: .5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ============= 时段关心 ============= */
+  .card-time {
+    text-align: center;
+    background: linear-gradient(180deg, rgba(255,228,217,.85), rgba(255,255,255,.72));
+  }
+  .time-greeting {
+    font-size: 22px;
+    font-weight: 600;
+    color: #C25565;
+    margin-bottom: 8px;
+  }
+  .time-message {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #7A5544;
+  }
+  .time-icon {
+    font-size: 30px;
+    margin-bottom: 6px;
+  }
+
+  /* ============= 我很想念你 ============= */
+  .card-miss { text-align: center; }
+  .miss-sub {
+    font-size: 13px;
+    color: #B0735C;
+    opacity: .85;
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .miss-btn {
+    position: relative;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%;
+    padding: 24px 12px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #FFD9E0, #FFB6C8);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    transition: transform .15s ease;
+    box-shadow: 0 6px 18px rgba(255,143,163,.25);
+  }
+  .miss-btn:active { transform: scale(.98); }
+  .miss-btn-heart { font-size: 32px; line-height: 1; position: relative; z-index: 1; }
+  .miss-btn-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(192,90,90,.25);
+    position: relative;
+    z-index: 1;
+    letter-spacing: 1px;
+  }
+  .miss-progress {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 0%;
+    background: rgba(255,107,122,.38);
+    pointer-events: none;
+  }
+  .miss-btn.holding { animation: missShake .3s ease-in-out infinite; }
+  @keyframes missShake {
+    0%, 100% { transform: scale(1.0) rotate(-.4deg); }
+    50%      { transform: scale(1.02) rotate(.4deg); }
+  }
+  .miss-stats {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #B0735C;
+    letter-spacing: .5px;
+  }
+  .miss-stats b {
+    color: #FF6B7A;
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+    padding: 0 2px;
+  }
+  .miss-dot { margin: 0 10px; opacity: .45; }
+
+  /* ============= 戳一戳 ============= */
+  .card-tap { text-align: center; }
+  .tap-area {
+    background: linear-gradient(135deg, #FFE9DD, #FFD0BD);
+    border-radius: 18px;
+    padding: 24px 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform .1s ease;
+  }
+  .tap-area:active { transform: scale(.98); }
+  .tap-pet {
+    font-size: 42px;
+    animation: petBounce 2.4s ease-in-out infinite;
+    display: inline-block;
+  }
+  @keyframes petBounce {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(-8px) rotate(3deg); }
+  }
+  .tap-tip {
+    font-size: 12px;
+    color: #B0735C;
+    margin-top: 10px;
+    opacity: .75;
+  }
+  .tap-bubble {
+    position: fixed;
+    pointer-events: none;
+    z-index: 50;
+    background: rgba(255,255,255,.95);
+    border-radius: 18px;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: #C25565;
+    box-shadow: 0 6px 18px rgba(192,90,90,.20);
+    animation: bubbleUp 1.8s ease-out forwards;
+    max-width: 220px;
+    line-height: 1.5;
+    border: 1px solid rgba(255,182,160,.5);
+  }
+  @keyframes bubbleUp {
+    0%   { opacity: 0; transform: translate(-50%, 0) scale(.6); }
+    15%  { opacity: 1; transform: translate(-50%, -8px) scale(1); }
+    80%  { opacity: 1; transform: translate(-50%, -40px) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -64px) scale(.9); }
+  }
+
+  /* ============= 抽鼓励卡 ============= */
+  .card-draw { text-align: center; }
+  .btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all .2s ease;
+    user-select: none;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #FF8FA3, #FF6B7A);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(255,107,122,.30);
+  }
+  .btn-primary:active { transform: scale(.96); box-shadow: 0 3px 8px rgba(255,107,122,.30); }
+  .draw-card {
+    margin-top: 14px;
+    min-height: 76px;
+    padding: 18px 16px;
+    background: linear-gradient(135deg, #FFF8F2, #FFE9DD);
+    border-radius: 16px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #7A5544;
+    display: none;
+    border: 1px dashed #FFB6A0;
+    animation: cardShow .4s ease;
+  }
+  .draw-card.show { display: block; }
+  @keyframes cardShow {
+    from { opacity: 0; transform: translateY(8px) scale(.98); }
+    to   { opacity: 1; transform: translateY(0)   scale(1); }
+  }
+  .draw-share {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #B0735C;
+    opacity: .65;
+  }
+
+  /* ============= 留言板 ============= */
+  textarea {
+    width: 100%;
+    border: 1px solid rgba(255,182,160,.45);
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: #5C3B2E;
+    background: rgba(255,255,255,.7);
+    resize: none;
+    outline: none;
+    transition: border-color .2s ease;
+    min-height: 70px;
+    line-height: 1.6;
+  }
+  textarea:focus { border-color: #FF8FA3; }
+  textarea::placeholder { color: #B0735C; opacity: .6; }
+  .board-actions {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 12px;
+    gap: 10px;
+  }
+  .board-count { font-size: 12px; color: #B0735C; opacity: .7; }
+  .board-list {
+    margin-top: 14px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .msg-item {
+    background: rgba(255,228,217,.6);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #7A5544;
+    position: relative;
+    animation: msgIn .35s ease;
+    word-break: break-word;
+  }
+  .msg-meta {
+    font-size: 11px;
+    color: #B0735C;
+    opacity: .65;
+    margin-top: 4px;
+  }
+  .msg-del {
+    position: absolute;
+    top: 8px; right: 10px;
+    font-size: 14px;
+    color: #B0735C;
+    opacity: 0;
+    transition: opacity .2s ease;
+    padding: 2px 6px;
+  }
+  .msg-item:hover .msg-del { opacity: .7; }
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============= Footer ============= */
+  .foot {
+    text-align: center;
+    padding: 22px 0 6px;
+    color: #B0735C;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+  .foot-sub { font-size: 11px; opacity: .65; }
+
+  /* 屏幕较大时更宽松 */
+  @media (min-width: 520px) {
+    .app { padding-top: 40px; padding-bottom: 100px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hearts-bg" id="heartsBg"></div>
+
+<div class="app">
+
+  <header class="hero">
+    <div class="hero-tag">📖 今日日记</div>
+    <h1>给希希</h1>
+    <p class="hero-sub">一份陪伴，一句惦记 🤍</p>
+  </header>
+
+  <!-- 1. 日记开头：日期 + 天气 -->
+  <section class="card card-diary">
+    <div class="card-head"><span class="card-title">今天，是 ✿</span></div>
+    <div class="diary-date" id="diaryDate">— —</div>
+
+    <div class="weather-label">外面的天气，是...</div>
+    <div class="weather-grid" id="weatherGrid"></div>
+
+    <div class="diary-line" id="diaryLine"></div>
+  </section>
+
+  <!-- 2. 陪伴计数器 -->
+  <section class="card card-days">
+    <div class="card-head"><span class="card-title">你来这世界，已经</span></div>
+    <div class="days-count">
+      <span class="days-num" id="daysNum">0</span>
+      <span class="days-unit">天</span>
+    </div>
+    <div class="days-detail" id="daysDetail">— —</div>
+  </section>
+
+  <!-- 3. 时段关心 -->
+  <section class="card card-time">
+    <div class="time-icon" id="timeIcon">🌙</div>
+    <div class="time-greeting" id="timeGreeting">嗨，希希</div>
+    <div class="time-message" id="timeMessage">— —</div>
+  </section>
+
+  <!-- 4. 我很想念你 -->
+  <section class="card card-miss">
+    <div class="card-head"><span class="card-title">我很想念你 💭</span></div>
+    <div class="miss-sub">想我的时候，就按住下面这块<br>按得越久，想念越大 🤍</div>
+    <div class="miss-btn" id="missBtn">
+      <div class="miss-progress" id="missProgress"></div>
+      <span class="miss-btn-heart">🤍</span>
+      <span class="miss-btn-text" id="missBtnText">按住我想你</span>
+    </div>
+    <div class="miss-stats">
+      今天被想念 <b id="missToday">0</b> 次
+      <span class="miss-dot">·</span>
+      累计被想念 <b id="missTotal">0</b> 次
+    </div>
+  </section>
+
+  <!-- 5. 戳一戳 -->
+  <section class="card card-tap">
+    <div class="card-head"><span class="card-title">戳一下，有小惊喜 👉</span></div>
+    <div class="tap-area" id="tapArea">
+      <div class="tap-pet" id="tapPet">🐾</div>
+      <div class="tap-tip">（点这里 / 点屏幕上任何地方都可以~）</div>
+    </div>
+  </section>
+
+  <!-- 5. 抽鼓励卡 -->
+  <section class="card card-draw">
+    <div class="card-head"><span class="card-title">想听我说点啥？</span></div>
+    <button class="btn btn-primary" id="drawBtn">抽一张鼓励卡 💌</button>
+    <div class="draw-card" id="drawCard"></div>
+    <div class="draw-share">（这一张是专门给你的）</div>
+  </section>
+
+  <!-- 6. 留言板 -->
+  <section class="card card-board">
+    <div class="card-head"><span class="card-title">💬 想跟你说...</span></div>
+    <textarea id="msgInput" maxlength="120"
+              placeholder="写一句心里话给希希，贴上去她就能看到"></textarea>
+    <div class="board-actions">
+      <button class="btn btn-primary" id="addMsgBtn">贴上留言 ✿</button>
+      <span class="board-count" id="msgCount">0 条留言</span>
+    </div>
+    <div class="board-list" id="msgList"></div>
+  </section>
+
+  <footer class="foot">
+    <div>永远陪着你 🤍</div>
+    <div class="foot-sub">记得按时吃饭、好好睡觉</div>
+  </footer>
+
+</div>
+
+<script>
+/* ============================================================
+   ⚙️ 配置区
+   - 老大在这里改：
+============================================================ */
+const CONFIG = {
+  // 【重要】改这里 ▼ —— 希希的生日（YYYY-MM-DD）
+  birthday: '1998-10-18',
+  // 她的名字
+  herName: '希希',
+  // 老大你叫啥（行内可显示，希希看到时会用这个名字称呼你）
+  myName: '老大',
+};
+
+/* ====== 天气 ====== */
+const WEATHERS = [
+  { id: 'sunny',   icon: '☀️', name: '晴天',   tip: '晴朗的一天，阳光像是专门洒给你的 ☀️' },
+  { id: 'cloudy',  icon: '⛅', name: '多云',   tip: '云朵轻轻地，给天空加了点奶盖 ☁️' },
+  { id: 'rainy',   icon: '🌧', name: '下雨',   tip: '下雨天不出门也行，记得窝好被子 ☔' },
+  { id: 'snowy',   icon: '❄️', name: '下雪',   tip: '冷的话就缩被子里，我抱着你 ❄️' },
+  { id: 'overcast',icon: '🌫', name: '阴天',   tip: '阴天不用烦躁，正好发呆喝热饮 🌫' },
+  { id: 'windy',   icon: '🌬', name: '大风',   tip: '风大记得穿厚一点，别逞强呀 🌬' },
+];
+
+/* ====== 时段关心（24h） ====== */
+const TIME_SLOTS = [
+  { start: 5,  end: 9,  icon: '🌅', greet: '早安，希希',
+    msgs: ['太阳晒屁股啦，记得吃早餐呀',
+           '新的一天，又是爱你的一天 ✿',
+           '出门记得看天气，水杯带上没？'] },
+  { start: 9,  end: 11, icon: '☕', greet: '上午好，希希',
+    msgs: ['辛苦工作啦，起来伸个懒腰吧',
+           '记得喝水，水杯在不在手边？',
+           '别盯屏幕太久，眼睛也要休息下'] },
+  { start: 11, end: 13, icon: '🍱', greet: '中午啦，希希',
+    msgs: ['午餐要吃好，不许凑合 🍱',
+           '今天想吃点啥？记得补充能量',
+           '吃饱了再工作，下午有得忙'] },
+  { start: 13, end: 17, icon: '☀️', greet: '下午好，希希',
+    msgs: ['下午有点困吧，起来走两步',
+           '累了就歇会儿，世界不会跑掉',
+           '想我就说，我随时都在 ☁️'] },
+  { start: 17, end: 19, icon: '🌇', greet: '傍晚啦，希希',
+    msgs: ['快下班啦，今天辛苦啦 🌇',
+           '走在回家路上，别只盯着手机哦',
+           '期待今晚一起吃饭没？'] },
+  { start: 19, end: 22, icon: '🌙', greet: '晚上好，希希',
+    msgs: ['今晚想做什么？都行～ 🌙',
+           '放松一下，看剧发呆聊天都OK',
+           '晚饭后散散步也好呀'] },
+  { start: 22, end: 24, icon: '🌜', greet: '夜深啦，希希',
+    msgs: ['再玩一会就睡吧 🌜',
+           '今天的你也超级棒，明天见',
+           '我陪你，看着你睡'] },
+  { start: 0,  end: 5,  icon: '🌒', greet: '嗨，希希',
+    msgs: ['不睡觉我会担心的 🌒',
+           '再不睡我不理你了哦（骗你的）',
+           '快去睡，我守着你的梦'] },
+];
+
+/* ====== 戳一戳彩蛋（老大钦定 5 句） ====== */
+const TAP_BUBBLES = [
+  '希望你那儿天天天气好',
+  '希望你天天开心',
+  '工作辛苦了，要好好吃饭',
+  '宇宙超级无敌Tracy大美女',
+  '参见央国企大佬',
+];
+
+/* ====== 鼓励卡语库（50+） ====== */
+const ENCOURAGE = [
+  '你是最特别的，我会一直陪着你 🤍',
+  '不管多累，记得有人一直在想你',
+  '今天的你，也很了不起呀 ✿',
+  '累了就歇歇，世界不会因为你停下就崩塌',
+  '你是我的小幸运 ☘️',
+  '不开心的时候，记得你还有我',
+  '好好吃饭、按时睡觉，这是命令 ❤️',
+  '即使你不完美，我也爱你所有的样子',
+  '想我的时候，不用客气，尽管想',
+  '你是这世界上，独一无二的存在 ✨',
+  '慢一点没关系，等等你的心',
+  '不必逞强，我接得住你的所有脆弱',
+  '抱抱你，别害怕',
+  '你不孤单，我一直都在',
+  '伤心难过是正常的，不用否认它',
+  '你做得很好了，别怀疑自己',
+  '我会把好运气，分一点给你',
+  '难过的时候，就来撒娇吧',
+  '你是值得被疼爱的小孩 🧸',
+  '天塌下来，我也陪你顶着',
+  '吃饭了没？别饿着肚子',
+  '睡得好吗？记得盖好被子',
+  '走慢点，不着急',
+  '你笑的时候，世界都亮了',
+  '不需要讨好谁，你做自己就很好',
+  '你的存在，本身就很美好',
+  '不要怕，我会一直在',
+  '累了就停下，我帮你看着',
+  '比起远方的山，我更想走近你的生活',
+  '你不用完美，做真实的自己就好',
+  '我之所以坚持，是因为有你',
+  '今晚的星星，都因你而亮',
+  '不在乎全世界，我只在乎你',
+  '把心交给我，我会好好保管',
+  '静下来，听听心里的声音',
+  '你的眼睛里有星星 ⭐',
+  '不管世界多喧嚣，我给你安宁',
+  '我想看你笑，比你想象的还要想',
+  '你不必匆匆，慢慢来',
+  '让我照顾你，也是一种幸福',
+  '抱抱 ☁️ 我们都在',
+  '你的眼泪，我会偷偷擦掉',
+  '不管几岁，你都是我的小女孩',
+  '累了就来找我，我永远都在',
+  '你的每一点进步，我都看到了',
+  '你的好，只有我知道',
+  '你不需要知道所有答案',
+  '让我做你的港湾 ⛵',
+  '好好爱自己，我会爱你更多',
+  '此刻，我在想你 🌸',
+  '被惦记，是一件很幸福的事 ✿',
+];
+
+/* ============================================================
+   工具函数
+============================================================ */
+const $ = (id) => document.getElementById(id);
+const pad = (n) => String(n).padStart(2, '0');
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+/* ============================================================
+   1. 日期渲染
+============================================================ */
+const WEEK = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+const MONTH = ['一','二','三','四','五','六','七','八','九','十','十一','十二'];
+
+function formatDiaryDate(d) {
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const wk = WEEK[d.getDay()];
+  return `${y} 年 ${m} 月 ${day} 日 · ${wk}`;
+}
+
+function renderDiaryDate() {
+  $('diaryDate').textContent = formatDiaryDate(new Date());
+}
+
+/* ============================================================
+   2. 天气选择
+============================================================ */
+function renderWeathers() {
+  const grid = $('weatherGrid');
+  const saved = localStorage.getItem('weather_' + todayKey()) || '';
+  grid.innerHTML = '';
+  WEATHERS.forEach(w => {
+    const el = document.createElement('div');
+    el.className = 'weather-item' + (w.id === saved ? ' selected' : '');
+    el.dataset.id = w.id;
+    el.innerHTML = `<div class="weather-icon">${w.icon}</div><div class="weather-name">${w.name}</div>`;
+    el.addEventListener('click', () => onPickWeather(w, el));
+    grid.appendChild(el);
+  });
+  if (saved) showDiaryLine(WEATHERS.find(w => w.id === saved));
+}
+
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+}
+
+function onPickWeather(w, el) {
+  document.querySelectorAll('.weather-item').forEach(n => n.classList.remove('selected'));
+  el.classList.add('selected');
+  localStorage.setItem('weather_' + todayKey(), w.id);
+  showDiaryLine(w);
+  burstHearts(8);
+}
+
+function showDiaryLine(w) {
+  $('diaryLine').textContent = `今天${w.name} —— ${w.tip}`;
+}
+
+/* ============================================================
+   3. 陪伴计数器
+============================================================ */
+function updateDays() {
+  const start = new Date(CONFIG.birthday + 'T00:00:00');
+  const now = new Date();
+  if (isNaN(start.getTime()) || start > now) {
+    $('daysNum').textContent = '—';
+    $('daysDetail').textContent = '老大请在 CONFIG 里设置希希的生日 📌';
+    return;
+  }
+  const diffMs = now - start;
+  const totalSec = Math.floor(diffMs / 1000);
+  const days = Math.floor(totalSec / 86400);
+  const hours = Math.floor((totalSec % 86400) / 3600);
+  const mins = Math.floor((totalSec % 3600) / 60);
+  const secs = totalSec % 60;
+  $('daysNum').textContent = days;
+  $('daysDetail').textContent =
+    `${pad(hours)} 小时 ${pad(mins)} 分 ${pad(secs)} 秒，每一刻都算数 ✿`;
+}
+
+/* ============================================================
+   4. 时段关心
+============================================================ */
+function renderTimeSlot() {
+  const h = new Date().getHours();
+  const slot = TIME_SLOTS.find(s => h >= s.start && h < s.end)
+            || TIME_SLOTS[TIME_SLOTS.length - 1];
+  $('timeIcon').textContent = slot.icon;
+  $('timeGreeting').textContent = slot.greet;
+  $('timeMessage').textContent = pick(slot.msgs);
+}
+
+/* ====== 想念语库 ====== */
+const MISS_LINES = [
+  '我很想你，现在就想',
+  '想到你，嘴角就自己上扬',
+  '突然好想抱抱你',
+  '你那边天气怎么样？我这边在想你',
+  '想你想到心尖尖发软',
+  '距离再远，想念也会到',
+  '刚才走神了，因为在想你',
+  '今天的想念已送达，请查收 🤍',
+  '你在干嘛？我在想你',
+  '想见你，超想的那种',
+];
+
+/* ============================================================
+   4.5 我很想念你（按住充能）
+============================================================ */
+const MISS_KEY = 'miss_stats_v1';
+
+function loadMiss() {
+  try {
+    const s = JSON.parse(localStorage.getItem(MISS_KEY));
+    if (!s || typeof s !== 'object') throw 0;
+    return { total: s.total || 0, date: s.date || '', today: s.today || 0 };
+  } catch(e) { return { total: 0, date: '', today: 0 }; }
+}
+function saveMiss(s) { localStorage.setItem(MISS_KEY, JSON.stringify(s)); }
+
+function renderMissStats() {
+  const s = loadMiss();
+  const today = todayKey();
+  if (s.date !== today) { s.date = today; s.today = 0; saveMiss(s); }
+  $('missToday').textContent = s.today;
+  $('missTotal').textContent = s.total;
+}
+
+function addMiss() {
+  const s = loadMiss();
+  s.today += 1;
+  s.total += 1;
+  saveMiss(s);
+  renderMissStats();
+}
+
+function bindMiss() {
+  const btn = $('missBtn');
+  const progress = $('missProgress');
+  const text = $('missBtnText');
+  let holdStart = 0;
+  let rafId = null;
+  let holding = false;
+
+  const HOLD_FULL = 3; // 3 秒充满
+
+  const startHold = (e) => {
+    e.preventDefault();
+    holding = true;
+    holdStart = Date.now();
+    btn.classList.add('holding');
+    const tick = () => {
+      if (!holding) return;
+      const held = (Date.now() - holdStart) / 1000;
+      const pct = Math.min(100, (held / HOLD_FULL) * 100);
+      progress.style.width = pct + '%';
+      text.textContent = held < HOLD_FULL
+        ? `想念充能中 ${held.toFixed(1)}s`
+        : '想念满格！松手发射 🤍';
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+  };
+
+  const endHold = () => {
+    if (!holding) return;
+    holding = false;
+    cancelAnimationFrame(rafId);
+    btn.classList.remove('holding');
+    const held = Math.max(0.3, (Date.now() - holdStart) / 1000);
+    const power = Math.min(3, Math.max(1, Math.round(held))); // 1~3 档
+    progress.style.width = '0%';
+    text.textContent = '按住我想你';
+    // 松手特效：想念句子 + 爱心雨（档位越高越猛）
+    showBubble(window.innerWidth / 2, window.innerHeight / 2 - 60, pick(MISS_LINES));
+    burstHearts(power * 10);
+    addMiss();
+  };
+
+  btn.addEventListener('pointerdown', startHold);
+  btn.addEventListener('pointerup', endHold);
+  btn.addEventListener('pointerleave', endHold);
+  btn.addEventListener('pointercancel', endHold);
+}
+
+/* ============================================================
+   5. 戳一戳彩蛋
+============================================================ */
+function bindTap() {
+  const trigger = (e) => {
+    const x = (e.touches ? e.touches[0].clientX : e.clientX);
+    const y = (e.touches ? e.touches[0].clientY : e.clientY);
+    if (e.target.closest('.board-actions') ||
+        e.target.closest('#drawBtn') ||
+        e.target.closest('#missBtn') ||
+        e.target.closest('textarea')) return;
+    const text = pick(TAP_BUBBLES);
+    showBubble(x, y, text);
+    burstHearts(3, x, y);
+  };
+  document.addEventListener('click', trigger);
+  document.addEventListener('touchstart', trigger, { passive: true });
+  // 替换宠物 icon
+  const icons = ['🐾','🐱','🐶','🐰','🐻','🐼','🦊'];
+  let pi = 0;
+  $('tapPet').addEventListener('click', (e) => {
+    e.stopPropagation();
+    pi = (pi + 1) % icons.length;
+    $('tapPet').textContent = icons[pi];
+  });
+}
+
+function showBubble(x, y, text) {
+  const b = document.createElement('div');
+  b.className = 'tap-bubble';
+  b.style.left = x + 'px';
+  b.style.top  = (y - 10) + 'px';
+  b.textContent = text;
+  document.body.appendChild(b);
+  setTimeout(() => b.remove(), 1900);
+}
+
+/* ============================================================
+   6. 抽鼓励卡
+============================================================ */
+function bindDraw() {
+  $('drawBtn').addEventListener('click', () => {
+    const c = $('drawCard');
+    const text = pick(ENCOURAGE);
+    c.style.animation = 'none';
+    c.offsetHeight; // reflow
+    c.style.animation = '';
+    c.textContent = text;
+    c.classList.add('show');
+    burstHearts(10);
+  });
+}
+
+/* ============================================================
+   7. 留言板
+============================================================ */
+const MSG_KEY = 'board_msgs_v1';
+
+function loadMsgs() {
+  try { return JSON.parse(localStorage.getItem(MSG_KEY)) || []; }
+  catch(e) { return []; }
+}
+function saveMsgs(arr) { localStorage.setItem(MSG_KEY, JSON.stringify(arr)); }
+
+function renderMsgs() {
+  const arr = loadMsgs();
+  const list = $('msgList');
+  list.innerHTML = '';
+  $('msgCount').textContent = `${arr.length} 条留言`;
+  if (!arr.length) return;
+  arr.forEach((m, idx) => {
+    const el = document.createElement('div');
+    el.className = 'msg-item';
+    el.innerHTML =
+      `<button class="msg-del" data-idx="${idx}" title="删除">✕</button>` +
+      `<div>${escapeHtml(m.text)}</div>` +
+      `<div class="msg-meta">${m.time}</div>`;
+    list.appendChild(el);
+  });
+  list.querySelectorAll('.msg-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = +btn.dataset.idx;
+      const arr = loadMsgs();
+      arr.splice(i, 1);
+      saveMsgs(arr);
+      renderMsgs();
+    });
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function bindMsg() {
+  $('addMsgBtn').addEventListener('click', () => {
+    const ta = $('msgInput');
+    const txt = ta.value.trim();
+    if (!txt) { ta.focus(); return; }
+    const arr = loadMsgs();
+    const now = new Date();
+    const time = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    arr.unshift({ text: txt, time });
+    saveMsgs(arr);
+    ta.value = '';
+    renderMsgs();
+    burstHearts(8);
+  });
+}
+
+/* ============================================================
+   8. 飘心动画
+============================================================ */
+function burstHearts(count = 5, x, y) {
+  const layer = $('heartsBg');
+  const hearts = ['❤','💕','💗','💖','🤍','🌸','✿'];
+  for (let i = 0; i < count; i++) {
+    const h = document.createElement('div');
+    h.className = 'float-heart';
+    h.textContent = pick(hearts);
+    const startX = (typeof x === 'number')
+      ? x + (Math.random() * 60 - 30)
+      : Math.random() * window.innerWidth;
+    h.style.left = startX + 'px';
+    const size = 16 + Math.random() * 16;
+    h.style.fontSize = size + 'px';
+    const dur = 4 + Math.random() * 3;
+    h.style.animationDuration = dur + 's';
+    h.style.animationDelay = (Math.random() * 0.4) + 's';
+    layer.appendChild(h);
+    setTimeout(() => h.remove(), (dur + 0.5) * 1000);
+  }
+}
+
+/* ============================================================
+   启动
+============================================================ */
+function init() {
+  renderDiaryDate();
+  renderWeathers();
+  renderTimeSlot();
+  renderMsgs();
+  renderMissStats();
+  bindTap();
+  bindMiss();
+  bindDraw();
+  bindMsg();
+  updateDays();
+  setInterval(updateDays, 1000);
+  setInterval(renderTimeSlot, 60 * 1000);
+  // 间歇性背景飘心
+  setInterval(() => burstHearts(1), 4500);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
